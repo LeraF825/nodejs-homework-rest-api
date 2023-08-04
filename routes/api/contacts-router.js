@@ -1,5 +1,5 @@
 import express from "express";
-import contactsService from "../../models/contacts.js";
+import Contact from "../../models/Contact.js";
 import Joi from "joi";
 
 const contactsRouter = express.Router();
@@ -17,7 +17,7 @@ const contactAddSchema = Joi.object({
 
 contactsRouter.get('/', async (req, res, next) => {
   try{
-    const result = await contactsService.listContacts();
+    const result = await Contact.find();
     res.json(result)
   }
   catch (error){
@@ -28,7 +28,7 @@ next(error)
 contactsRouter.get('/:contactId', async (req, res, next) => {
   try{
 const {contactId} = req.params;
-const result = await contactsService.getContactById(contactId);
+const result = await Contact.findOne({_id:contactId});
 if(!result){
   return res.status(404).json({
     message: `Contact with id=${contactId} not found`
@@ -48,7 +48,7 @@ if(error){
   return res.status(400).json({message: error.message})
 }
 const {name, email, phone} = req.body;
-const result = await contactsService.addContact({name, email, phone});
+const result = await Contact.create(req.body);
 res.json(result);
   }
   catch(error){
@@ -59,7 +59,7 @@ res.json(result);
 contactsRouter.delete('/:contactId', async (req, res, next) => {
  try{
   const {contactId} = req.params;
-const result = await contactsService.removeContact(contactId);
+const result = await Contact.findByIdAndDelete({_id:contactId});
 res.json(result)
  }
  catch(error){
@@ -74,8 +74,8 @@ contactsRouter.put('/:contactId', async (req, res, next) => {
       return res.status(400).json({message: error.message})
     }
     const {contactId} = req.params;
-    const {name, email, phone} = req.body;
-    const result = await contactsService.updateContact(contactId,{name, email, phone});
+    const {name, email, phone, favorite} = req.body;
+    const result = await Contact.findByIdAndUpdate({_id:contactId},req.body,{new:true});
     if(!result){
       return res.status(404).json({
         message: `Contact with id=${contactId} not found`
@@ -86,6 +86,26 @@ contactsRouter.put('/:contactId', async (req, res, next) => {
       catch(error){
         next(error);
       }
+})
+
+contactsRouter.patch('/:contactId/favorite', async (req, res, next) => {
+try{
+  const {contactId} = req.params;
+  const {favorite} = req.body;
+  if(favorite){
+    return res.status(400).json({message: error.message})
+  }
+  const result = await Contact.findByIdAndUpdate({_id:contactId},req.body,{new:true});
+  if(!result){
+    return res.status(404).json({
+      message: `Contact with id=${contactId} not found`
+    })
+  }
+  res.json(result);
+}
+catch(error){
+  next(error);
+}
 })
 
 export default contactsRouter;
