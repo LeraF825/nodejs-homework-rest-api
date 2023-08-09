@@ -18,7 +18,10 @@ const userSchema = new Schema({
         enum: ["starter", "pro", "business"],
         default: "starter"
       },
-      token: String
+      token: String,
+      avatarURL: {
+        type: String,
+      },
 })
 userSchema.pre("findOneAndUpdate", allowUpdateValidate);
 userSchema.post("save",handleSaveError);
