@@ -1,8 +1,13 @@
 import express from "express";
 import Contact from "../../models/Contact.js";
 import Joi from "joi";
+import upload from "../../middlewares/upload.js";
+import fs from 'fs/promises';
+import path from 'path';
 
 const contactsRouter = express.Router();
+const avatarPath = path.resolve('public','avatars');
+
 const contactAddSchema = Joi.object({
   name: Joi.string().required().messages({
     "any.required": "missing required name field",
@@ -41,15 +46,14 @@ next(error)
   } 
 })
 
-contactsRouter.post('/', async (req, res, next) => {
+contactsRouter.post('/', upload.single('avatarURL'), async (req, res, next) => {
   try{
 const {error} = contactAddSchema.validate(req.body);
 if(error){
   return res.status(400).json({message: error.message})
 }
-const {name, email, phone} = req.body;
-const result = await Contact.create(req.body);
-res.json(result);
+const result = await Contact.create({ ...req.body, avatarURL, owner });
+res.status(201).json(result);
   }
   catch(error){
     next(error);
