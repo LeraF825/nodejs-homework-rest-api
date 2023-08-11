@@ -8,6 +8,10 @@ const authRouter = express.Router();
 
 authRouter.post( "/register",validateBody(usersSchemas.userRegisterSchema),authControllers.register);
 
+authRouter.get("/verify/:verificationToken", authControllers.verify);
+
+authRouter.post("/verify", validateBody(usersSchemas.userEmailSchema),authControllers.resendVerifyEmail);
+
 authRouter.post("/login",validateBody(usersSchemas.userLoginSchema),authControllers.login);
 
 authRouter.get("/current", authenticate, authControllers.getCurrent);
